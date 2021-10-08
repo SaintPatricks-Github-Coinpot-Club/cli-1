@@ -277,7 +277,8 @@ class Sandbox extends EventEmitter {
       ...argv,
     ]
 
-    this[_npm] = this[_test].mock('../../lib/npm.js', this[_mocks])
+    const Npm = this[_test].mock('../../lib/npm.js', this[_mocks])
+    this[_npm] = new Npm()
     this[_npm].output = (...args) => this[_output].push(args)
     await this[_npm].load()
     // in some node versions (later 10.x) our executionAsyncId at this point
@@ -290,20 +291,11 @@ class Sandbox extends EventEmitter {
     }
 
     const cmd = this[_npm].argv.shift()
-    const impl = this[_npm].commands[cmd]
-    if (!impl) {
-      throw new Error(`Unknown command: ${cmd}`)
-    }
+    return this[_npm].exec(cmd, this[_npm].argv)
+    // const cmd = this[_npm].argv.shift()
+    // const impl = await this[_npm].cmd(cmd)
 
-    return new Promise((resolve, reject) => {
-      impl(this[_npm].argv, (err) => {
-        if (err) {
-          return reject(err)
-        }
-
-        return resolve()
-      })
-    })
+    // return impl.exec(this[_npm].argv)
   }
 
   async complete (command, argv, partial) {
@@ -335,7 +327,8 @@ class Sandbox extends EventEmitter {
       ...argv,
     ]
 
-    this[_npm] = this[_test].mock('../../lib/npm.js', this[_mocks])
+    const Npm = this[_test].mock('../../lib/npm.js', this[_mocks])
+    this[_npm] = new Npm()
     this[_npm].output = (...args) => this[_output].push(args)
     await this[_npm].load()
     // in some node versions (later 10.x) our executionAsyncId at this point
@@ -347,11 +340,7 @@ class Sandbox extends EventEmitter {
       process = this[_proxy]
     }
 
-    const impl = this[_npm].commands[command]
-    if (!impl) {
-      throw new Error(`Unknown command: ${cmd}`)
-    }
-
+    const impl = await this[_npm].cmd(command)
     return impl.completion({
       partialWord: partial,
       conf: {

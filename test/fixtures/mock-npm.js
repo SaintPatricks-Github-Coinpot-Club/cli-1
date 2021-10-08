@@ -8,37 +8,17 @@ for (const level in npmlog.levels)
 
 const { title, execPath } = process
 
+// Eventually this should default to having a prefix of an empty testdir, and
+// awaiting npm.load() unless told not to (for npm tests for example).  Ideally
+// the prefix of an empty dir is inferred rather than explicitly set
 const RealMockNpm = (t, otherMocks = {}) => {
-  t.afterEach(() => {
-    outputs.length = 0
-    logs.length = 0
-  })
-  t.teardown(() => {
-    npm.perfStop()
-    npmlog.record.length = 0
-    for (const level in npmlog.levels)
-      npmlog[level] = realLog[level]
-    procLog.reset()
-    process.title = title
-    process.execPath = execPath
-    delete process.env.npm_command
-    delete process.env.COLOR
-  })
   const logs = []
   const outputs = []
   const joinedOutput = () => {
     return outputs.map(o => o.join(' ')).join('\n')
   }
-  const npm = t.mock('../../lib/npm.js', otherMocks)
-  const command = async (command, args = []) => {
-    return new Promise((resolve, reject) => {
-      npm.commands[command](args, err => {
-        if (err)
-          return reject(err)
-        return resolve()
-      })
-    })
-  }
+  const Npm = t.mock('../../lib/npm.js', otherMocks)
+  const npm = new Npm()
   for (const level in npmlog.levels) {
     npmlog[level] = (...msg) => {
       logs.push([level, ...msg])
@@ -50,7 +30,25 @@ const RealMockNpm = (t, otherMocks = {}) => {
     }
   }
   npm.output = (...msg) => outputs.push(msg)
-  return { npm, logs, outputs, command, joinedOutput }
+
+  t.afterEach(() => {
+    outputs.length = 0
+    logs.length = 0
+  })
+
+  t.teardown(() => {
+    npm.perfStop()
+    npmlog.record.length = 0
+    for (const level in npmlog.levels)
+      npmlog[level] = realLog[level]
+    procLog.reset()
+    process.title = title
+    process.execPath = execPath
+    delete process.env.npm_command
+    delete process.env.COLOR
+  })
+
+  return { npm, logs, outputs, joinedOutput }
 }
 
 const realConfig = require('../../lib/utils/config')

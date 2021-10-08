@@ -214,7 +214,7 @@ Object {
 }
 `
 
-exports[`test/lib/utils/error-message.js TAP bad engine with config loaded > must match snapshot 1`] = `
+exports[`test/lib/utils/error-message.js TAP bad engine without config loaded > must match snapshot 1`] = `
 Object {
   "detail": Array [
     Array [
@@ -222,7 +222,7 @@ Object {
       String(
         Not compatible with your version of node/npm: some@package
         Required: undefined
-        Actual:   {"npm":"123.69.420-npm","node":"99.99.99"}
+        Actual:   {"npm":"123.69.420-npm","node":"123.69.420-node"}
       ),
     ],
   ],
@@ -1145,7 +1145,7 @@ Object {
       String(
         Not compatible with your version of node/npm: some@package
         Required: undefined
-        Actual:   {"npm":"123.69.420-npm","node":"123.69.420-node"}
+        Actual:   {"npm":"123.69.420-npm","node":"99.99.99"}
       ),
     ],
   ],
